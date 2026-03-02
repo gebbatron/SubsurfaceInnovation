@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subsurface Innovation Tracker</title>
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-9MHK97S37F"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-9MHK97S37F');
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <h1 class="header-title">
+        Subsurface Innovation Tracker
+        <span class="badge" id="totalBadge">0</span>
+      </h1>
+      <p class="header-subtitle">Tracking global CCUS, Geothermal, DLE, Natural Hydrogen &amp; Helium announcements</p>
+    </div>
+    <div class="header-right">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+        <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="main">
+    <!-- KPI Cards -->
+    <section class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Announcements</div>
+        <div class="kpi-value" id="kpiTotal">--</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Countries Covered</div>
+        <div class="kpi-value" id="kpiCountries">--</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Funded Projects</div>
+        <div class="kpi-value" id="kpiFunded">--</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Funding</div>
+        <div class="kpi-value" id="kpiFunding">--</div>
+      </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="filters-bar">
+      <div class="filter-group">
+        <label class="filter-label">Technology</label>
+        <div class="tech-checkboxes" id="techCheckboxes"></div>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="dateFrom">From</label>
+        <input type="date" id="dateFrom" class="filter-input">
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="dateTo">To</label>
+        <input type="date" id="dateTo" class="filter-input">
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="countrySearch">Country</label>
+        <input type="text" id="countrySearch" class="filter-input" placeholder="Search country...">
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="companySearch">Company</label>
+        <input type="text" id="companySearch" class="filter-input" placeholder="Search company...">
+      </div>
+      <div class="filter-group filter-actions">
+        <button class="btn-reset" id="resetFilters">Reset</button>
+      </div>
+    </section>
+
+    <!-- Map -->
+    <section class="card map-card">
+      <div id="map"></div>
+    </section>
+
+    <!-- Charts Row 1 -->
+    <section class="chart-row">
+      <div class="card chart-card">
+        <h3 class="chart-title">By Technology</h3>
+        <canvas id="chartTech"></canvas>
+      </div>
+      <div class="card chart-card">
+        <h3 class="chart-title">Top 15 Countries</h3>
+        <canvas id="chartCountries"></canvas>
+      </div>
+    </section>
+
+    <!-- Charts Row 2 -->
+    <section class="chart-row">
+      <div class="card chart-card">
+        <h3 class="chart-title">Announcements Over Time</h3>
+        <canvas id="chartTimeline"></canvas>
+      </div>
+      <div class="card chart-card">
+        <h3 class="chart-title">By Announcement Type</h3>
+        <canvas id="chartType"></canvas>
+      </div>
+    </section>
+
+    <!-- Charts Row 3 -->
+    <section class="chart-row">
+      <div class="card chart-card">
+        <h3 class="chart-title">Funding by Technology</h3>
+        <canvas id="chartFundingTech"></canvas>
+      </div>
+      <div class="card chart-card">
+        <h3 class="chart-title">Project Stage Distribution</h3>
+        <canvas id="chartStage"></canvas>
+      </div>
+    </section>
+
+    <!-- Charts Row 4 -->
+    <section class="chart-row">
+      <div class="card chart-card">
+        <h3 class="chart-title">Top 20 Companies</h3>
+        <canvas id="chartCompanies"></canvas>
+      </div>
+      <div class="card chart-card">
+        <h3 class="chart-title">Funding Over Time</h3>
+        <canvas id="chartFundingTime"></canvas>
+      </div>
+    </section>
+
+    <!-- Data Table -->
+    <section class="card table-card">
+      <div class="table-header">
+        <h3 class="chart-title">Announcements</h3>
+        <div class="table-controls">
+          <input type="text" id="tableSearch" class="filter-input" placeholder="Search table...">
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="dataTable">
+          <thead>
+            <tr>
+              <th data-col="date" class="sortable">Date <span class="sort-arrow"></span></th>
+              <th data-col="technology" class="sortable">Technology <span class="sort-arrow"></span></th>
+              <th data-col="company" class="sortable">Company <span class="sort-arrow"></span></th>
+              <th data-col="project">Project</th>
+              <th data-col="country" class="sortable">Country <span class="sort-arrow"></span></th>
+              <th data-col="type" class="sortable">Type <span class="sort-arrow"></span></th>
+              <th data-col="stage" class="sortable">Stage <span class="sort-arrow"></span></th>
+              <th data-col="amount" class="sortable num">Amount <span class="sort-arrow"></span></th>
+              <th data-col="source">Source</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagination"></div>
+    </section>
+  </main>
+
+  <!-- Detail Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="detailModal">
+      <button class="modal-close" id="modalClose">&times;</button>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
